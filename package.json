@@ -1,0 +1,24 @@
+{
+  "name": "erf-register",
+  "version": "1.0.0",
+  "description": "This is a template repository for a simple [GitHub scraper](https://simonwillison.net/2020/Oct/9/git-scraping/) pioneered by Simon Wilson.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jtfell/erf-register.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jtfell/erf-register/issues"
+  },
+  "homepage": "https://github.com/jtfell/erf-register#readme",
+  "dependencies": {
+    "adm-zip": "^0.5.10",
+    "csv-parse": "^5.4.0",
+    "node-fetch": "^3.3.1"
+  }
+}
