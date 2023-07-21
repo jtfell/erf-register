@@ -22,7 +22,7 @@ async function downloadERF() {
     skip_empty_lines: true
   });
 
-  const CHUNK_SIZE = 20;
+  const CHUNK_SIZE = 30;
 
   for (let i = 0; i < parsedCsv.length; i = i + CHUNK_SIZE) {
 
@@ -51,7 +51,7 @@ async function processProject(project, retries=5) {
       const ceaArea = await fetch(ceaFileUrl);
       zipFile = await ceaArea.arrayBuffer();
     } catch (e) {
-      if (retries) {
+      if (retries === 0) {
         throw e;
       } else {
         console.log(`Retrying ${pId} (${retries - 1} retries left)`);
