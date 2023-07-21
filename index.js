@@ -34,7 +34,7 @@ async function downloadERF() {
   fs.writeFileSync(`${__dirname}/data.json`, JSON.stringify(parsedCsv, null, 2));
 }
 
-async function processProject(project, retry=false) {
+async function processProject(project, retries=5) {
   const pId = project['Project ID'];
 
   const mappingFileUrl = project['Project Mapping File URL'];
@@ -51,11 +51,11 @@ async function processProject(project, retry=false) {
       const ceaArea = await fetch(ceaFileUrl);
       zipFile = await ceaArea.arrayBuffer();
     } catch (e) {
-      if (retry) {
+      if (retries) {
         throw e;
       } else {
-        console.log(`Retrying ${pId}`);
-        return await processProject(project, true);
+        console.log(`Retrying ${pId} (${retries - 1} retries left)`);
+        return await processProject(project, retries - 1);
       }
     }
 
