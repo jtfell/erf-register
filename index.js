@@ -2,7 +2,8 @@ const { parse } = require('csv-parse/sync');
 const fs = require('fs');
 const URL = require("url").URL;
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
-var AdmZip = require("adm-zip");
+const AdmZip = require("adm-zip");
+const shapefile = require("shapefile");
 
 const stringIsAValidUrl = (s) => {
   try {
@@ -34,6 +35,8 @@ async function downloadERF() {
 }
 
 async function processProject(project, retry=false) {
+  const pId = project['Project ID'];
+
   const mappingFileUrl = project['Project Mapping File URL'];
   // if (stringIsAValidUrl(mappingFileUrl)) {
   //   console.log(`Mapping ${project['Project ID']}`);
@@ -51,15 +54,15 @@ async function processProject(project, retry=false) {
       if (retry) {
         throw e;
       } else {
-        console.log(`Retrying ${project['Project ID']}`);
+        console.log(`Retrying ${pId}`);
         return await processProject(project, true);
       }
     }
 
 
-    const outputPrefix = `${__dirname}/cea_${project['Project ID']}`;
+    const outputPrefix = `${__dirname}/cea_${pId}`;
     return new Promise((resolve, reject) => {
-      fs.writeFile(`${outputPrefix}.zip`, Buffer.from(zipFile), (err) => {
+      fs.writeFile(`${outputPrefix}.zip`, Buffer.from(zipFile), async (err) => {
         if (err) {
           return reject(err);
         }
@@ -67,10 +70,17 @@ async function processProject(project, retry=false) {
         const zip = new AdmZip(`${outputPrefix}.zip`);
         zip.extractAllTo(`${outputPrefix}/`, true);
 
-        fs.unlink(`${outputPrefix}.zip`, (err2) => {
+        const shp = await shapefile.open(`${outputPrefix}/${pId}_CEA.shp`)
+        const geoJson = await shp.read();
+
+        fs.writeFile(`${outputPrefix}.geojson`, JSON.stringify(geoJson, null, 2), (err2) => {
           if (err2) return reject(err2);
-          console.log(`CEA ${project['Project ID']} extracted`);
-          return resolve();
+          fs.unlink(`${outputPrefix}.zip`, (err3) => {
+            if (err3) return reject(err3);
+            console.log(`CEA ${project['Project ID']} extracted`);
+            fs.rmSync(outputPrefix, { recursive: true, force: true });
+            return resolve();
+          });
         });
       })
     });
