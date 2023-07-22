@@ -17,8 +17,8 @@
   },
   "homepage": "https://github.com/jtfell/erf-register#readme",
   "dependencies": {
-    "adm-zip": "^0.5.10",
     "csv-parse": "^5.4.0",
-    "node-fetch": "^3.3.1"
+    "node-fetch": "^3.3.1",
+    "zx": "^7.2.3"
   }
 }

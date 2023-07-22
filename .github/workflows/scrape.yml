@@ -15,12 +15,14 @@ jobs:
       run: |-
         sudo apt-get install gdal-bin
         npm i
-        npm i --global topojson-server
-        node index.js 
+        npm i --global topojson-server zx
+        zx index.mjs 
+        ls -ali
     - name: Commit and push if it changed
       run: |-
         git config user.name "Automated"
         git config user.email "actions@users.noreply.github.com"
+        git config http.postBuffer 524288000
         git add -A
         timestamp=$(date -u)
         git commit -m "Latest data: ${timestamp}" || exit 0
