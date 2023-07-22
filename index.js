@@ -1,9 +1,8 @@
-const { parse } = require('csv-parse/sync');
-const fs = require('fs');
-const URL = require("url").URL;
+const { parse } = require('csv-parse/sync'); const fs = require('fs'); const URL = require("url").URL;
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 const AdmZip = require("adm-zip");
 const shapefile = require("shapefile");
+const { spawn } = require('child_process');
 
 const stringIsAValidUrl = (s) => {
   try {
@@ -33,7 +32,6 @@ async function downloadERF() {
   }
   fs.writeFileSync(`${__dirname}/data.json`, JSON.stringify(parsedCsv, null, 2));
 }
-const { spawn } = require('child_process');
 
 
 function convertToGeoJson2(outputPrefix, pId) {
@@ -91,8 +89,13 @@ async function processProject(project, retries=5) {
           return reject(err);
         }
 
-        const zip = new AdmZip(`${outputPrefix}.zip`);
-        zip.extractAllTo(`${outputPrefix}/`, true);
+        try {
+          const zip = new AdmZip(`${outputPrefix}.zip`);
+          zip.extractAllTo(`${outputPrefix}/`, true);
+        } catch (e) {
+          console.log(`Retrying ${pId} (${retries - 1} retries left)`);
+          return processProject(project, retries - 1);
+        }
 
         await convertToGeoJson2(outputPrefix, pId);
 
