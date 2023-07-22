@@ -33,13 +33,30 @@ async function downloadERF() {
   }
   fs.writeFileSync(`${__dirname}/data.json`, JSON.stringify(parsedCsv, null, 2));
 }
+const { spawn } = require('child_process');
 
-function toJson(data) {
-  var out="[";
-  for(var indx=0;indx<data.length-1;indx++){
-    out+=JSON.stringify(data[indx],null,4)+",";
-  }
-  out+=JSON.stringify(data[data.length-1],null,4)+"]";
+
+function convertToGeoJson2(outputPrefix, pId) {
+  return new Promise((resolve, reject) => {
+    const childProcess = spawn('ogr2ogr', [`${outputPrefix}.geojson`, `${outputPrefix}/${pId}_CEA.shp`]);
+    childProcess.on('exit', function (code, signal) {
+      if (code === 0) {
+        return resolve();
+      }
+      return reject();
+    });
+  });
+}
+async function convertToGeoJson(outputPrefix, pId) {
+  const shp = await shapefile.open(`${outputPrefix}/${pId}_CEA.shp`)
+  const geoJson = await shp.read();
+
+  return new Promise((resolve, reject) => {
+    fs.writeFile(`${outputPrefix}.geojson`, JSON.stringify(geoJson.value), (err) => {
+      if (err) return reject(err);
+      return resolve();
+    });
+  });
 }
 
 async function processProject(project, retries=5) {
@@ -67,7 +84,6 @@ async function processProject(project, retries=5) {
       }
     }
 
-
     const outputPrefix = `${__dirname}/cea_${pId}`;
     return new Promise((resolve, reject) => {
       fs.writeFile(`${outputPrefix}.zip`, Buffer.from(zipFile), async (err) => {
@@ -78,17 +94,13 @@ async function processProject(project, retries=5) {
         const zip = new AdmZip(`${outputPrefix}.zip`);
         zip.extractAllTo(`${outputPrefix}/`, true);
 
-        const shp = await shapefile.open(`${outputPrefix}/${pId}_CEA.shp`)
-        const geoJson = await shp.read();
+        await convertToGeoJson2(outputPrefix, pId);
 
-        fs.writeFile(`${outputPrefix}.geojson`, JSON.stringify(geoJson.value), (err2) => {
-          if (err2) return reject(err2);
-          fs.unlink(`${outputPrefix}.zip`, (err3) => {
-            if (err3) return reject(err3);
-            console.log(`CEA ${project['Project ID']} extracted`);
-            fs.rmSync(outputPrefix, { recursive: true, force: true });
-            return resolve();
-          });
+        return fs.unlink(`${outputPrefix}.zip`, (err3) => {
+          if (err3) return reject(err3);
+          console.log(`CEA ${project['Project ID']} extracted`);
+          fs.rmSync(outputPrefix, { recursive: true, force: true });
+          return resolve();
         });
       })
     });
