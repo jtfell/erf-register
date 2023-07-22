@@ -34,6 +34,14 @@ async function downloadERF() {
   fs.writeFileSync(`${__dirname}/data.json`, JSON.stringify(parsedCsv, null, 2));
 }
 
+function toJson(data) {
+  var out="[";
+  for(var indx=0;indx<data.length-1;indx++){
+    out+=JSON.stringify(data[indx],null,4)+",";
+  }
+  out+=JSON.stringify(data[data.length-1],null,4)+"]";
+}
+
 async function processProject(project, retries=5) {
   const pId = project['Project ID'];
 
@@ -73,7 +81,7 @@ async function processProject(project, retries=5) {
         const shp = await shapefile.open(`${outputPrefix}/${pId}_CEA.shp`)
         const geoJson = await shp.read();
 
-        fs.writeFile(`${outputPrefix}.geojson`, JSON.stringify(geoJson, null, 2), (err2) => {
+        fs.writeFile(`${outputPrefix}.geojson`, JSON.stringify(geoJson.value), (err2) => {
           if (err2) return reject(err2);
           fs.unlink(`${outputPrefix}.zip`, (err3) => {
             if (err3) return reject(err3);
