@@ -15,6 +15,7 @@ jobs:
       run: |-
         sudo apt-get install gdal-bin
         npm i
+        npm i --global topojson-server
         node index.js 
     - name: Commit and push if it changed
       run: |-
