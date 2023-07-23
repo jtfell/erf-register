@@ -19,7 +19,7 @@ async function processCeaFile(ceaUrl, pId) {
   await $`curl ${ceaUrl} > ${outputPrefix}.zip --silent`;
   await $`unzip -qo ${outputPrefix}.zip -d ${outputPrefix}/`;
   await $`ogr2ogr ${outputPrefix}.geojson ${outputPrefix}/${pId}_CEA.shp -overwrite`;
-  await $`geo2topo ${outputPrefix}.geojson > ${outputPrefix}.topojson`;
+  await $`geo2topo ${outputPrefix}.geojson -q 1e6 > ${outputPrefix}.topojson`;
 
   // Clean up temp files
   await $`rm -rf ${outputPrefix}/ ${outputPrefix}.geojson ${outputPrefix}.zip`;
