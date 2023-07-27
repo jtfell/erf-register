@@ -13,7 +13,7 @@ async function processCeaFile(ceaUrl, pId) {
   const outputPrefix = `${__dirname}/cea_${pId}`;
 
   // Clean up old files for this project
-  await $`rm -rf ${outputPrefix}/ ${outputPrefix}.geojson ${outputPrefix}.zip`;
+  await $`rm -rf ${outputPrefix}/ ${outputPrefix}.geojson ${outputPrefix}.zip ${outputPrefix}.topojson`;
 
   // Download, unzip and convert to TopoJSON
   await $`curl ${ceaUrl} > ${outputPrefix}.zip --silent`;
