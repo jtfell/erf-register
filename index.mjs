@@ -46,8 +46,10 @@ async function processProject(project, retries=5) {
 
   const ceaFileUrl = project['Carbon Estimation Area mapping file URL'];
   if (stringIsAValidUrl(ceaFileUrl)) {
-    return processCeaFile(ceaFileUrl, pId);
+    await processCeaFile(ceaFileUrl, pId);
   }
+
+  fs.writeFileSync(`${__dirname}/project_${pId}.json`, JSON.stringify(project, null, 2));
 }
 
 const rawRes = await fetch(CER);
